@@ -1,0 +1,53 @@
+name: ASENA APK Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle 8.9 kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: Android paketlerini kur
+        run: |
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
+
+      - name: Türkçe ses modelini indir
+        run: |
+          mkdir -p app/src/main/assets/model
+          curl --fail --retry 3 -L \
+            https://alphacephei.com/vosk/models/vosk-model-small-tr-0.3.zip \
+            -o /tmp/model.zip
+          unzip -q /tmp/model.zip -d /tmp/asena-model
+          cp -r /tmp/asena-model/vosk-model-small-tr-0.3/. app/src/main/assets/model/
+          touch app/src/main/assets/model/uuid
+
+      - name: APK oluştur
+        run: gradle --no-daemon assembleDebug
+
+      - name: APK dosyasını kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: ASENA-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
