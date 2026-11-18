@@ -65,16 +65,15 @@ class AsenaService : Service(), RecognitionListener {
                     copyAssets("model", modelDirectory)
                 }
 
-                model = Model(modelDirectory.absolutePath)
-                recognizer = Recognizer(model, 16000.0f)
+                val loadedModel = Model(modelDirectory.absolutePath)
+model = loadedModel
 
-                speechService = SpeechService(
-                    recognizer,
-                    16000.0f
-                )
+val loadedRecognizer = Recognizer(loadedModel, 16000.0f)
+recognizer = loadedRecognizer
 
-                speechService?.startListening(this)
-
+val service = SpeechService(loadedRecognizer, 16000.0f)
+speechService = service
+service.startListening(this)
                 updateNotification("ASENA çevrimdışı dinlemede")
 
             } catch (e: Exception) {
