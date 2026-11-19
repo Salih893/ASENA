@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.speech.tts.TextToSpeech
+import java.util.Locale
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
