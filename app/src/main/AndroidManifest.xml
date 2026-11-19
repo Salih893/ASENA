@@ -10,6 +10,7 @@
     <application
         android:allowBackup="false"
         android:label="ASENA"
+        android:icon="@drawable/asena_icon"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
         <activity
