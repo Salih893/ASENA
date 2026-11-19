@@ -23,13 +23,24 @@ class AsenaService : Service(), RecognitionListener {
     private var model: Model? = null
     private var recognizer: Recognizer? = null
     private var speechService: SpeechService? = null
+    private var textToSpeech: TextToSpeech? = null
+    private var ttsReady = false
 
     private val channelId = "asena_listener"
     private val notificationId = 1001
 
     override fun onCreate() {
-        super.onCreate()
-        createNotificationChannel()
+    super.onCreate()
+    createNotificationChannel()
+
+    textToSpeech = TextToSpeech(this) { status ->
+        if (status == TextToSpeech.SUCCESS) {
+            val result = textToSpeech?.setLanguage(Locale("tr", "TR"))
+            ttsReady = result != TextToSpeech.LANG_MISSING_DATA &&
+                result != TextToSpeech.LANG_NOT_SUPPORTED
+        }
+    }
+    }
     }
 
     override fun onStartCommand(
