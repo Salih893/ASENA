@@ -25,6 +25,7 @@ class AsenaService : Service(), RecognitionListener {
     private var speechService: SpeechService? = null
     private var textToSpeech: TextToSpeech? = null
     private var ttsReady = false
+    private var lastWakeWordTime = 0L
 
     private val channelId = "asena_listener"
     private val notificationId = 1001
