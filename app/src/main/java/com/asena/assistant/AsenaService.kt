@@ -162,7 +162,16 @@ service.startListening(this)
         val manager = getSystemService(
             NotificationManager::class.java
         )
-
+    private fun speak(message: String) {
+        if (ttsReady) {
+        textToSpeech?.speak(
+            message,
+            TextToSpeech.QUEUE_FLUSH,
+            null,
+            "ASENA_REPLY"
+        )
+    }
+}
         manager.notify(
             notificationId,
             createNotification(message)
