@@ -236,6 +236,9 @@ service.startListening(this)
         speechService = null
         recognizer = null
         model = null
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
+        textToSpeech = null
 
         super.onDestroy()
     }
