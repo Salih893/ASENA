@@ -1,4 +1,3 @@
-
 package com.asena.assistant
 
 import android.app.Notification
@@ -10,38 +9,41 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.speech.tts.TextToSpeech
-import java.util.Locale
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.SpeechService
 import org.vosk.android.RecognitionListener
 import java.io.File
+import java.util.Locale
 
 class AsenaService : Service(), RecognitionListener {
 
     private var model: Model? = null
     private var recognizer: Recognizer? = null
     private var speechService: SpeechService? = null
+
     private var textToSpeech: TextToSpeech? = null
-    private var ttsReady = false
+    @Volatile private var ttsReady = false
     private var lastWakeWordTime = 0L
 
     private val channelId = "asena_listener"
     private val notificationId = 1001
 
     override fun onCreate() {
-    super.onCreate()
-    createNotificationChannel()
+        super.onCreate()
+        createNotificationChannel()
 
-    textToSpeech = TextToSpeech(this) { status ->
-        if (status == TextToSpeech.SUCCESS) {
-            val result = textToSpeech?.setLanguage(Locale("tr", "TR"))
-            ttsReady = result != TextToSpeech.LANG_MISSING_DATA &&
-                result != TextToSpeech.LANG_NOT_SUPPORTED
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val result = textToSpeech?.setLanguage(
+                    Locale("tr", "TR")
+                )
+                ttsReady =
+                    result != TextToSpeech.LANG_MISSING_DATA &&
+                    result != TextToSpeech.LANG_NOT_SUPPORTED
+            }
         }
-    }
-    }
     }
 
     override fun onStartCommand(
@@ -80,14 +82,21 @@ class AsenaService : Service(), RecognitionListener {
                 }
 
                 val loadedModel = Model(modelDirectory.absolutePath)
-model = loadedModel
+                model = loadedModel
 
-val loadedRecognizer = Recognizer(loadedModel, 16000.0f)
-recognizer = loadedRecognizer
+                val loadedRecognizer = Recognizer(
+                    loadedModel,
+                    16000.0f
+                )
+                recognizer = loadedRecognizer
 
-val service = SpeechService(loadedRecognizer, 16000.0f)
-speechService = service
-service.startListening(this)
+                val service = SpeechService(
+                    loadedRecognizer,
+                    16000.0f
+                )
+                speechService = service
+                service.startListening(this)
+
                 updateNotification("ASENA çevrimdışı dinlemede")
 
             } catch (e: Exception) {
@@ -163,20 +172,22 @@ service.startListening(this)
         val manager = getSystemService(
             NotificationManager::class.java
         )
-    private fun speak(message: String) {
-        if (ttsReady) {
-        textToSpeech?.speak(
-            message,
-            TextToSpeech.QUEUE_FLUSH,
-            null,
-            "ASENA_REPLY"
-        )
-    }
-}
+
         manager.notify(
             notificationId,
             createNotification(message)
         )
+    }
+
+    private fun speak(message: String) {
+        if (ttsReady) {
+            textToSpeech?.speak(
+                message,
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                "ASENA_REPLY"
+            )
+        }
     }
 
     override fun onResult(hypothesis: String?) {
@@ -210,8 +221,13 @@ service.startListening(this)
                 .lowercase()
                 .replace("ı", "i")
 
-            if (text.contains("asena")) {
+            if (
+                text.contains("asena") &&
+                System.currentTimeMillis() - lastWakeWordTime > 5000
+            ) {
+                lastWakeWordTime = System.currentTimeMillis()
                 updateNotification("ASENA çağrıldı")
+                speak("Buradayım, seni dinliyorum.")
             }
 
         } catch (_: Exception) {
@@ -236,9 +252,11 @@ service.startListening(this)
         speechService = null
         recognizer = null
         model = null
+
         textToSpeech?.stop()
         textToSpeech?.shutdown()
         textToSpeech = null
+        ttsReady = false
 
         super.onDestroy()
     }
